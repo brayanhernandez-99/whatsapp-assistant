@@ -1,0 +1,41 @@
+{
+  "name": "whatsapp-assistant",
+  "version": "1.0.0",
+  "description": "Chatbot modular para WhatsApp desarrollado con Node.js y Baileys, diseñado para automatizar respuestas, gestionar menús interactivos y facilitar futuras integraciones con bases de datos e inteligencia artificial.",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "keywords": [
+    "whatsapp",
+    "whatsapp-bot",
+    "chatbot",
+    "baileys",
+    "automation",
+    "nodejs",
+    "assistant",
+    "bot",
+    "javascript"
+  ],
+  "author": "Brayan",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.18",
+    "dotenv": "^16.6.1",
+    "pino": "^9.7.0",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.31.0",
+    "prettier": "^3.6.2"
+  }
+}
