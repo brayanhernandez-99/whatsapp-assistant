@@ -1,13 +1,15 @@
-import { TIMEOUTS } from '../utils/constants.js';
 import logger from '../utils/logger.js';
 import { extractPhoneFromJid } from '../utils/helpers.js';
+import env from '../config/env.js';
+
+const CLEANUP_INTERVAL = 60 * 1000;
 
 const states = new Map();
 const timestamps = new Map();
 let onExpireCallback = null;
 let cleanupTimer = null;
 
-export function getState(phone) {
+function getState(phone) {
   if (!states.has(phone)) {
     return { currentMenu: 'main', previousMenu: null, selectedOption: null, context: {} };
   }
@@ -15,48 +17,59 @@ export function getState(phone) {
   return states.get(phone);
 }
 
-export function setState(phone, newState) {
+function setState(phone, newState) {
   states.set(phone, newState);
   timestamps.set(phone, Date.now());
-  logger.debug({ phone: extractPhoneFromJid(phone), menu: newState.currentMenu }, 'Estado actualizado');
+  logger.debug(
+    { phone: extractPhoneFromJid(phone), menu: newState.currentMenu },
+    'Estado actualizado',
+  );
 }
 
-export function hasState(phone) {
+function hasState(phone) {
   return states.has(phone);
 }
 
-export function onSessionExpire(callback) {
+function onSessionExpire(callback) {
   onExpireCallback = callback;
 }
 
 function cleanExpiredStates() {
   const now = Date.now();
+  const expired = [];
 
   for (const [phone, timestamp] of timestamps) {
-    if (now - timestamp > TIMEOUTS.stateExpiry) {
-      states.delete(phone);
-      timestamps.delete(phone);
-      logger.info({ phone: extractPhoneFromJid(phone) }, 'Sesión expirada por inactividad');
+    if (now - timestamp > env.SESSION_TIMEOUT * 60 * 1000) {
+      expired.push(phone);
+    }
+  }
 
-      if (onExpireCallback) {
-        try {
-          onExpireCallback(phone);
-        } catch (error) {
-          logger.error({ err: error, phone: extractPhoneFromJid(phone) }, 'Error en callback de expiración');
-        }
+  for (const phone of expired) {
+    states.delete(phone);
+    timestamps.delete(phone);
+    logger.info({ phone: extractPhoneFromJid(phone) }, 'Sesion expirada por inactividad');
+
+    if (onExpireCallback) {
+      try {
+        onExpireCallback(phone);
+      } catch (error) {
+        logger.error(
+          { err: error, phone: extractPhoneFromJid(phone) },
+          'Error en callback de expiracion',
+        );
       }
     }
   }
 }
 
-export function startCleanup() {
+function startCleanup() {
   if (cleanupTimer) return;
 
-  cleanupTimer = setInterval(cleanExpiredStates, TIMEOUTS.cleanupInterval);
+  cleanupTimer = setInterval(cleanExpiredStates, CLEANUP_INTERVAL);
   logger.debug('Cleanup de sesiones iniciado');
 }
 
-export function stopCleanup() {
+function stopCleanup() {
   if (cleanupTimer) {
     clearInterval(cleanupTimer);
     cleanupTimer = null;

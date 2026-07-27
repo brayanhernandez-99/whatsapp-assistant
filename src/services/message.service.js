@@ -4,6 +4,25 @@ import { extractPhoneFromJid } from '../utils/helpers.js';
 const sendQueue = [];
 let isProcessing = false;
 
+const botSentMessages = new Set();
+const BOT_MESSAGES_MAX = 500;
+
+function markBotSentMessage(messageId) {
+  if (botSentMessages.size >= BOT_MESSAGES_MAX) {
+    const first = botSentMessages.values().next().value;
+    botSentMessages.delete(first);
+  }
+  botSentMessages.add(messageId);
+}
+
+export function isBotSentMessage(messageId) {
+  if (botSentMessages.has(messageId)) {
+    botSentMessages.delete(messageId);
+    return true;
+  }
+  return false;
+}
+
 export async function sendText(sock, jid, text) {
   await enqueue(sock, jid, { text });
 }
@@ -25,8 +44,12 @@ async function processQueue() {
     const { sock, jid, content } = sendQueue.shift();
 
     try {
-      await sock.sendMessage(jid, content);
-      logger.info({ to: extractPhoneFromJid(jid), type: Object.keys(content)[0] }, 'Mensaje enviado');
+      const result = await sock.sendMessage(jid, content);
+      if (result?.key?.id) markBotSentMessage(result.key.id);
+      logger.info(
+        { to: extractPhoneFromJid(jid), type: Object.keys(content)[0] },
+        'Mensaje enviado',
+      );
     } catch (error) {
       logger.error({ err: error, to: extractPhoneFromJid(jid) }, 'Error al enviar mensaje');
     }
@@ -37,5 +60,3 @@ async function processQueue() {
 
   isProcessing = false;
 }
-
-export default { sendText, sendLocation };

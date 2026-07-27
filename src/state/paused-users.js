@@ -1,78 +1,73 @@
 import logger from '../utils/logger.js';
+import { extractPhoneFromJid } from '../utils/helpers.js';
+import env from '../config/env.js';
 
 const pausedUsers = new Map();
-const agentActivity = new Map();
-let autoResumeTimer = null;
+const advisorTimers = new Map();
+let onAdvisorTimeout = null;
 
-const AUTO_RESUME_MINUTES = 10;
-
-function extractPhone(jid) {
-  if (!jid) return jid;
-  return jid.split('@')[0];
+export function setOnAdvisorTimeout(callback) {
+  onAdvisorTimeout = callback;
 }
 
 export function pauseUser(phone, auto = false) {
-  const cleanPhone = extractPhone(phone);
-  pausedUsers.set(cleanPhone, { pausedAt: Date.now(), auto });
-  logger.info({ phone: cleanPhone, auto }, 'Bot pausado para usuario');
+  pausedUsers.set(phone, { pausedAt: Date.now(), auto });
+  startAdvisorTimer(phone);
+  logger.info({ phone: extractPhoneFromJid(phone), auto }, 'Bot pausado para usuario');
 }
 
 export function resumeUser(phone) {
-  const cleanPhone = extractPhone(phone);
-  if (pausedUsers.has(cleanPhone)) {
-    pausedUsers.delete(cleanPhone);
-    agentActivity.delete(cleanPhone);
-    logger.info({ phone: cleanPhone }, 'Bot reanudado para usuario');
+  cancelAdvisorTimer(phone);
+  if (pausedUsers.has(phone)) {
+    pausedUsers.delete(phone);
+    logger.info({ phone: extractPhoneFromJid(phone) }, 'Bot reanudado para usuario');
     return true;
   }
-  logger.warn({ phone: cleanPhone }, 'No se encontró usuario pausado para reanudar');
+  logger.warn({ phone: extractPhoneFromJid(phone) }, 'No se encontro usuario pausado para reanudar');
   return false;
 }
 
 export function isPaused(phone) {
-  const cleanPhone = extractPhone(phone);
-  return pausedUsers.has(cleanPhone);
+  return pausedUsers.has(phone);
 }
 
 export function trackAgentActivity(phone) {
-  const cleanPhone = extractPhone(phone);
-  agentActivity.set(cleanPhone, Date.now());
-}
-
-export function startAutoResume() {
-  if (autoResumeTimer) return;
-
-  autoResumeTimer = setInterval(() => {
-    const now = Date.now();
-
-    for (const [phone, data] of pausedUsers) {
-      if (!data.auto) continue;
-
-      const lastActivity = agentActivity.get(phone) || data.pausedAt;
-      const minutesSinceActivity = (now - lastActivity) / (60 * 1000);
-
-      if (minutesSinceActivity >= AUTO_RESUME_MINUTES) {
-        resumeUser(phone);
-        logger.info({ phone }, 'Bot reanudado automáticamente por inactividad');
-      }
-    }
-  }, 60 * 1000);
-
-  logger.debug('Auto-resume de pausas iniciado');
-}
-
-export function stopAutoResume() {
-  if (autoResumeTimer) {
-    clearInterval(autoResumeTimer);
-    autoResumeTimer = null;
+  if (pausedUsers.has(phone)) {
+    resetAdvisorTimer(phone);
   }
 }
 
-export default {
-  pauseUser,
-  resumeUser,
-  isPaused,
-  trackAgentActivity,
-  startAutoResume,
-  stopAutoResume,
-};
+function startAdvisorTimer(phone) {
+  cancelAdvisorTimer(phone);
+  const timeoutMs = env.ADVISOR_TIMEOUT * 60 * 1000;
+
+  const timer = setTimeout(() => {
+    advisorTimers.delete(phone);
+    if (onAdvisorTimeout) onAdvisorTimeout(phone);
+    resumeUser(phone);
+    logger.info({ phone }, 'Sesion de asesor expirada - bot reanudado');
+  }, timeoutMs);
+
+  advisorTimers.set(phone, timer);
+  logger.debug({ phone, timeout: env.ADVISOR_TIMEOUT }, 'Timer de asesor iniciado');
+}
+
+function resetAdvisorTimer(phone) {
+  cancelAdvisorTimer(phone);
+  startAdvisorTimer(phone);
+}
+
+function cancelAdvisorTimer(phone) {
+  const timer = advisorTimers.get(phone);
+  if (timer) {
+    clearTimeout(timer);
+    advisorTimers.delete(phone);
+  }
+}
+
+export function cleanupTimers() {
+  for (const [, timer] of advisorTimers) {
+    clearTimeout(timer);
+  }
+  advisorTimers.clear();
+}

@@ -4,16 +4,17 @@ import { createWhatsAppConnection, cleanSession } from './services/whatsapp.serv
 import { handleConnectionUpdate } from './handlers/connection.handler.js';
 import { createMessageHandler } from './handlers/message.handler.js';
 import stateManager from './state/state.manager.js';
-import { startAutoResume, stopAutoResume, resumeUser } from './state/paused-users.js';
+import { cleanupTimers, resumeUser, setOnAdvisorTimeout } from './state/paused-users.js';
 import * as messageService from './services/message.service.js';
+import { initLidResolver } from './services/lid-resolver.js';
 import { MESSAGES } from './utils/constants.js';
 import { extractPhoneFromJid } from './utils/helpers.js';
 
 function setupGracefulShutdown() {
   const shutdown = (signal) => {
-    logger.info(`Señal ${signal} recibida. Limpiando sesión...`);
+    logger.info(`Senal ${signal} recibida. Limpiando sesion...`);
     stateManager.stopCleanup();
-    stopAutoResume();
+    cleanupTimers();
     cleanSession();
     process.exit(0);
   };
@@ -29,20 +30,33 @@ async function start() {
 
   const sock = await createWhatsAppConnection();
 
+  initLidResolver(sock);
+
   const deps = { stateManager, messageService, sock };
 
   stateManager.onSessionExpire(async (phone) => {
     try {
       resumeUser(phone);
-      await messageService.sendText(sock, phone, MESSAGES.sessionTimeout);
-      logger.info({ phone: extractPhoneFromJid(phone) }, 'Sesión expirada y bot reanudado');
+      await messageService.sendText(deps.sock, phone, MESSAGES.sessionTimeout);
+      logger.info({ phone: extractPhoneFromJid(phone) }, 'Sesion expirada y bot reanudado');
     } catch (error) {
-      logger.error({ err: error, phone: extractPhoneFromJid(phone) }, 'Error al enviar mensaje de expiración');
+      logger.error(
+        { err: error, phone: extractPhoneFromJid(phone) },
+        'Error al enviar mensaje de expiracion',
+      );
+    }
+  });
+
+  setOnAdvisorTimeout(async (phone) => {
+    try {
+      await messageService.sendText(deps.sock, phone, MESSAGES.sessionTimeout);
+      logger.info({ phone: extractPhoneFromJid(phone) }, 'Timeout de asesor expirado - mensaje enviado');
+    } catch (error) {
+      logger.error({ err: error, phone: extractPhoneFromJid(phone) }, 'Error al enviar mensaje de timeout de asesor');
     }
   });
 
   stateManager.startCleanup();
-  startAutoResume();
 
   sock.ev.on('connection.update', handleConnectionUpdate(deps, createMessageHandler));
   sock.ev.on('messages.upsert', createMessageHandler(deps));

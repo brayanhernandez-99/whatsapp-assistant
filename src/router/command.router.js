@@ -29,8 +29,8 @@ function findMenuByKeyword(text, currentState) {
     return menu.keywords[text];
   }
 
-  for (const [, menuData] of Object.entries(MENUS)) {
-    if (menuData.keywords?.[text]) {
+  for (const [key, menuData] of Object.entries(MENUS)) {
+    if (key !== currentState.currentMenu && menuData.keywords?.[text]) {
       return menuData.keywords[text];
     }
   }
@@ -79,7 +79,10 @@ export async function routeMessage(parsedMessage, deps) {
           context: {},
         });
 
-        logger.info({ from: extractPhoneFromJid(from), option: text, menu: option }, 'Menú seleccionado');
+        logger.info(
+          { from: extractPhoneFromJid(from), option: text, menu: option },
+          'Menu seleccionado',
+        );
         await sendMenuResponse(sock, from, MENUS[option], messageService);
         return;
       }
@@ -98,7 +101,10 @@ export async function routeMessage(parsedMessage, deps) {
           context: {},
         });
 
-        logger.info({ from: extractPhoneFromJid(from), option: text, menu: subOption }, 'Submenú seleccionado');
+        logger.info(
+          { from: extractPhoneFromJid(from), option: text, menu: subOption },
+          'Submenu seleccionado',
+        );
         await sendMenuResponse(sock, from, subMenu, messageService);
         return;
       }
@@ -115,7 +121,10 @@ export async function routeMessage(parsedMessage, deps) {
       context: {},
     });
 
-    logger.info({ from: extractPhoneFromJid(from), keyword: text, menu: matchedMenu }, 'Menú seleccionado por keyword');
+    logger.info(
+      { from: extractPhoneFromJid(from), keyword: text, menu: matchedMenu },
+      'Menu seleccionado por keyword',
+    );
     await sendMenuResponse(sock, from, MENUS[matchedMenu], messageService);
     return;
   }
@@ -124,10 +133,11 @@ export async function routeMessage(parsedMessage, deps) {
     await messageService.sendText(sock, from, MESSAGES.advisorRedirect);
     pauseUser(from, false);
     goToMain(from, stateManager);
-    logger.info({ from: extractPhoneFromJid(from), menu: currentState.currentMenu }, 'Redirecting to advisor');
+    logger.info(
+      { from: extractPhoneFromJid(from), menu: currentState.currentMenu },
+      'Redirecting to advisor',
+    );
   } else {
     await messageService.sendText(sock, from, MESSAGES.defaultReply);
   }
 }
-
-export default { routeMessage };

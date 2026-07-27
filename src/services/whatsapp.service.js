@@ -44,9 +44,9 @@ export function cleanSession() {
     for (const file of files) {
       rmSync(join(env.SESSION_DIR, file), { force: true });
     }
-    logger.info('Archivos de sesión eliminados');
+    logger.info('Archivos de sesion eliminados');
   } catch (error) {
-    logger.warn({ err: error }, 'Error al limpiar sesión');
+    logger.warn({ err: error }, 'Error al limpiar sesion');
   }
 }
 

@@ -6,6 +6,8 @@ import {
   extractPhoneFromJid,
 } from '../utils/helpers.js';
 import { isPaused, pauseUser, trackAgentActivity } from '../state/paused-users.js';
+import { resolveJid } from '../services/lid-resolver.js';
+import { isBotSentMessage } from '../services/message.service.js';
 import logger from '../utils/logger.js';
 
 export function createMessageHandler(deps) {
@@ -15,11 +17,23 @@ export function createMessageHandler(deps) {
     if (type !== 'notify') return;
 
     for (const message of messages) {
+      let jid = null;
       try {
-        const jid = message.key.remoteJid;
+        const rawJid = message.key.remoteJid;
+
+        if (!rawJid || isGroupJid(rawJid)) continue;
+
+        jid = resolveJid(rawJid, message.key, !!message.key.fromMe);
+
+        if (!jid) {
+          logger.warn({ rawJid }, 'No se pudo resolver JID, ignorando mensaje');
+          continue;
+        }
 
         if (message.key.fromMe) {
-          if (!jid || isGroupJid(jid)) continue;
+          if (isBotSentMessage(message.key.id)) {
+            continue;
+          }
 
           if (isPaused(jid)) {
             trackAgentActivity(jid);
@@ -27,25 +41,30 @@ export function createMessageHandler(deps) {
             continue;
           }
 
-          if (!isPaused(jid)) {
-            pauseUser(jid, true);
-            logger.info({ from: extractPhoneFromJid(jid) }, 'Bot pausado automáticamente (asesor escribió)');
-            continue;
-          }
+          pauseUser(jid, true);
+          logger.info(
+            { from: extractPhoneFromJid(jid) },
+            'Bot pausado automaticamente (asesor escribio)',
+          );
+          continue;
         }
 
-        if (!jid || isGroupJid(jid)) continue;
-
         const content = message.message;
-        const body = extractMessageBody(content);
-        const msgType = extractMessageType(content);
 
         const parsed = {
           from: jid,
           pushName: message.pushName || 'Desconocido',
-          body,
-          type: msgType,
+          body: extractMessageBody(content),
+          type: extractMessageType(content),
         };
+
+        if (isPaused(parsed.from)) {
+          logger.debug(
+            { from: extractPhoneFromJid(parsed.from) },
+            'Mensaje ignorado (bot pausado)',
+          );
+          continue;
+        }
 
         logger.info(
           {
@@ -57,14 +76,15 @@ export function createMessageHandler(deps) {
           'Mensaje recibido',
         );
 
-        if (isPaused(parsed.from)) {
-          logger.debug({ from: extractPhoneFromJid(parsed.from) }, 'Mensaje ignorado (bot pausado)');
-          continue;
-        }
-
         await routeMessage(parsed, deps);
       } catch (error) {
-        logger.error({ err: error, from: extractPhoneFromJid(message.key.remoteJid) }, 'Error al procesar mensaje');
+        logger.error(
+          {
+            err: error,
+            from: extractPhoneFromJid(jid),
+          },
+          'Error al procesar mensaje',
+        );
       }
     }
   };

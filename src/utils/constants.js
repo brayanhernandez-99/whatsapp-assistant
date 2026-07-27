@@ -97,7 +97,7 @@ export const MENUS = {
     },
   },
   iphones: {
-    text: '📱 *iPhone nuevos y exhibición*\n\n¿Qué modelo te interesa?\n\n1️⃣ iPhone 17\n2️⃣ iPhone 16\n3️⃣ iPhone 15\n4️⃣ iPhone 13\n\nCuéntanos y te damos información al instante. 😊\n\n0️⃣ Volver al menú principal',
+    text: '📱 *iPhone nuevos y exhibición*\n\n¿Qué modelo te interesa?\n\n1️⃣ iPhone 17\n2️⃣ iPhone 16\n3️⃣ iPhone 15\n4️⃣ iPhone 13\n\nCuéntanos y te damos información al instante.\n\n0️⃣ Volver al menú principal',
     options: {
       1: 'iphone_17',
       2: 'iphone_16',
@@ -123,28 +123,28 @@ export const MENUS = {
     },
   },
   iphone_17: {
-    text: '📱 *iPhone 17*\n\n🔹 *Pro Max (256 GB)*\n• Cosmic Orange - $4.480.000\n• Deep Blue - $4.480.000\n• Silver - $4.500.000\n\n🔹 *Pro (256 GB)*\n• Cosmic Orange - $4.100.000\n• Deep Blue - $4.190.000\n• Silver - $4.200.000\n\n🔹 *iPhone 17 (256 GB)*\n• Black - $3.300.000\n• White - $3.350.000\n• Lavender - $3.350.000\n• Sage - $3.300.000\n• Mystic Blue - $3.300.000\n\n✅ Todos nuevos con garantía\n\n¿Te interesa algún modelo? Escríbenos y coordinamos tu compra. 😊\n\n0️⃣ Volver al menú principal',
+    text: '📱 *iPhone 17*\n\n🔹 *iPhone 17 Nuevo Pro Max (256 GB)*\n• Cosmic Orange\n• Deep Blue\n• Silver\n\n🔹 *iPhone 17 Nuevo Pro (256 GB)*\n• Cosmic Orange\n• Deep Blue\n• Silver\n\n🔹 *iPhone 17 Nuevo (256 GB)*\n• Black\n• White\n• Lavender\n• Sage\n• Mystic Blue\n\n💬 Escribe *asesor* para hablar con un asesor\n\n0️⃣ Volver al menú principal',
   },
   iphone_16: {
-    text: '📱 *iPhone 16*\n\n🔹 *Pro Max (256 GB Exhibición)*\n• Black Titanium - $3.350.000\n• White Titanium - $3.350.000\n• Natural Titanium - $3.350.000\n• Desert Titanium - $3.350.000\n\n🔹 *iPhone 16*\n• Black - $2.850.000 (128 GB Nuevo) / $2.750.000 (256 GB Exhibición)\n• White - $2.850.000 (128 GB Nuevo) / $2.750.000 (256 GB Exhibición)\n• Pink - $2.850.000 (128 GB Nuevo) / $2.750.000 (256 GB Exhibición)\n• Teal - $2.850.000 (128 GB Nuevo) / $2.750.000 (256 GB Exhibición)\n• Ultramarine - $2.850.000 (128 GB Nuevo) / $2.750.000 (256 GB Exhibición)\n\n¿Te interesa algún modelo? Escríbenos y coordinamos tu compra. 😊\n\n0️⃣ Volver al menú principal',
+    text: '📱 *iPhone 16*\n\n🔹 *iPhone 16 Exhibición Pro Max (256 GB)*\n• Black Titanium\n• White Titanium\n• Natural Titanium\n• Desert Titanium\n\n🔹 *iPhone 16 Exhibición (256 GB)*\n• Black\n• White\n• Pink\n• Teal\n• Ultramarine\n\n🔹 *iPhone 16 Nuevo (128 GB)*\n• Black\n• White\n• Pink\n• Teal\n• Ultramarine\n\n💬 Escribe *asesor* para hablar con un asesor\n\n0️⃣ Volver al menú principal',
   },
   iphone_15: {
-    text: '📱 *iPhone 15 (128 GB)*\n\n• Black - $2.450.000 (Nuevo)\n• Blue - $2.450.000 (Nuevo)\n\n⚠️ Green, Yellow y Pink agotados\n\n¿Te interesa algún color? Escríbenos y coordinamos tu compra. 😊\n\n0️⃣ Volver al menú principal',
+    text: '📱 *iPhone 15*\n\n🔹 *iPhone 15 Nuevo (128 GB)*\n• Black\n• Blue\n• Green\n• Yellow\n• Pink\n\n💬 Escribe *asesor* para hablar con un asesor\n\n0️⃣ Volver al menú principal',
   },
   iphone_13: {
-    text: '📱 *iPhone 13*\n\n• Midnight - $2.100.000 (128 GB Nuevo)\n• Midnight - $1.280.000 (128 GB Exhibición)\n• Blue - $1.400.000 (256 GB Exhibición)\n• Green - $1.280.000 (128 GB Exhibición)\n• Red - $1.280.000 (128 GB Exhibición)\n• Pink - $1.400.000 (256 GB Exhibición)\n\n¿Te interesa algún modelo? Escríbenos y coordinamos tu compra. 😊\n\n0️⃣ Volver al menú principal',
+    text: '📱 *iPhone 13*\n\n🔹 *iPhone 13 Nuevo (128 GB)*\n• Midnight\n\n🔹 *iPhone 13 Exhibición (128 GB)*\n• Midnight\n• Green\n• Red\n\n🔹 *iPhone 13 Exhibición (256 GB)*\n• Blue\n• Pink\n\n💬 Escribe *asesor* para hablar con un asesor\n\n0️⃣ Volver al menú principal',
   },
   plan_retoma: {
-    text: '🔄 *Plan Retoma*\n\n¿Tienes un iPhone que ya no usas?\n\n✅ Lo evaluamos al instante\n✅ Te damos crédito para tu nuevo equipo\n✅ Proceso rápido y seguro\n\n📸 Envíanos una foto de tu dispositivo y te damos una cotización al momento.\n\n0️⃣ Volver al menú principal',
+    text: '🔄 *Plan Retoma*\n\n¿Tienes un iPhone que ya no usas?\n\n✅ Lo evaluamos al instante\n✅ Te damos crédito para tu nuevo equipo\n✅ Proceso rápido y seguro\n\n📸 Envíanos una foto de tu dispositivo y te damos una cotización al momento.\n\n💬 Escribe *asesor* para hablar con un asesor\n\n0️⃣ Volver al menú principal',
   },
   medios_pago: {
-    text: '💳 *Medios de pago*\n\nAceptamos:\n\n💵 Efectivo\n💳 Tarjeta Débito\n💳 Tarjeta Crédito\n🏦 Addi\n🏦 SisteCredito\n🏦 Banco Bogotá\n\n¿Tienes alguna duda sobre los pagos? 😊\n\n0️⃣ Volver al menú principal',
+    text: '💳 *Medios de pago*\n\nAceptamos:\n\n💵 Efectivo\n💳 Tarjeta Débito\n💳 Tarjeta Crédito\n🏦 Addi\n🏦 SisteCredito\n🏦 Banco Bogotá\n\n¡Formas de pago pensadas para ti!\n\n0️⃣ Volver al menú principal',
   },
   servicio_tecnico: {
-    text: '🔧 *Servicio técnico*\n\nOfrecemos servicio técnico especializado:\n\n📱 Reparación de celulares\n🔋 Cambio de batería\n🖥️ Cambio de pantalla\n📷 Reparación de cámara\n🔌 Reparación de puerto de carga\n💻 Problemas de software\n\n¿Qué servicio necesitas? Escríbenos y un asesor se comunicará contigo. 😊\n\n0️⃣ Volver al menú principal',
+    text: '🔧 *Servicio técnico*\n\nOfrecemos servicio técnico especializado:\n\n📱 Reparación de celulares\n🔋 Cambio de batería\n🖥️ Cambio de pantalla\n📷 Reparación de cámara\n🔌 Reparación de puerto de carga\n💻 Problemas de software\n\n¿Qué servicio necesitas?\n\n💬 Escribe *asesor* para hablar con un asesor\n\n0️⃣ Volver al menú principal',
   },
   redes_sociales: {
-    text: '📲 *Síguenos en redes sociales*\n\nInstagram:\nhttps://www.instagram.com/urbantech_col\n\nFacebook:\nhttps://www.facebook.com/share/1B76NNCD7K\n\nTikTok:\nhttps://www.tiktok.com/@urbantech_col\n\n¡Síguenos para estar al día con nuestras ofertas y novedades! 🔥\n\n0️⃣ Volver al menú principal',
+    text: '📲 *Síguenos en redes sociales*\n\nInstagram:\nhttps://www.instagram.com/urbantech_col\n\nFacebook:\nhttps://www.facebook.com/share/1B76NNCD7K\n\nTikTok:\nhttps://www.tiktok.com/@urbantech_col\n\nPágina web:\nhttps://urbantechcol.com\n\n¡Síguenos para estar al día con nuestras ofertas y novedades! 🔥\n\n0️⃣ Volver al menú principal',
   },
   ubicacion: {
     text: '📍 *Ubicación*\n\nCra. 48 #10-45 Local 138\nCentro Comercial Monterrey, El Poblado, Medellín, Antioquia\n\n🕐 *Horario de atención:*\n• Lun–Sáb: 10:00 AM – 7:00 PM\n• Dom–Fes: 10:30 AM – 4:00 PM\n\n¡Te esperamos! 😊\n\n0️⃣ Volver al menú principal',
@@ -153,11 +153,6 @@ export const MENUS = {
       longitude: -75.57732642057863,
     },
   },
-};
-
-export const TIMEOUTS = {
-  stateExpiry: 30 * 60 * 1000,
-  cleanupInterval: 60 * 1000,
 };
 
 export const MESSAGES = {

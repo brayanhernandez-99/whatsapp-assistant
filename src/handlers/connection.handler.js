@@ -1,7 +1,14 @@
-import { displayQR, DisconnectReason, createWhatsAppConnection, cleanSession } from '../services/whatsapp.service.js';
+import {
+  displayQR,
+  DisconnectReason,
+  createWhatsAppConnection,
+  cleanSession,
+} from '../services/whatsapp.service.js';
+import { initLidResolver } from '../services/lid-resolver.js';
 import logger from '../utils/logger.js';
 
-const RECONNECT_DELAYS = [0, 5000, 15000, 30000, 60000, 120000, 180000, 300000];
+const RECONNECT_DELAY = 30_000;
+const MAX_RECONNECT_ATTEMPTS = 10;
 let reconnectAttempt = 0;
 let isReconnecting = false;
 
@@ -28,12 +35,12 @@ export function handleConnectionUpdate(deps, createMessageHandler) {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
-      logger.warn({ statusCode, shouldReconnect }, 'Conexión cerrada');
+      logger.warn({ statusCode, shouldReconnect }, 'Conexion cerrada');
 
       if (shouldReconnect) {
         await attemptReconnect(deps, createMessageHandler);
       } else {
-        logger.info('Sesión cerrada. Limpiando credenciales...');
+        logger.info('Sesion cerrada. Limpiando credenciales...');
         cleanSession();
         logger.info('Credenciales limpiadas. Reiniciando para generar nuevo QR...');
         reconnectAttempt = 0;
@@ -48,26 +55,35 @@ async function attemptReconnect(deps, createMessageHandler) {
   if (isReconnecting) return;
   isReconnecting = true;
 
-  const delay = RECONNECT_DELAYS[Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)];
-  reconnectAttempt++;
+  while (true) {
+    if (reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) {
+      logger.fatal({ attempts: reconnectAttempt }, 'Maximo de intentos de reconexion alcanzado');
+      isReconnecting = false;
+      process.exit(1);
+    }
 
-  logger.info(`Reconectando en ${delay / 1000}s (intento ${reconnectAttempt})...`);
+    const delay = RECONNECT_DELAY;
+    reconnectAttempt++;
 
-  await new Promise((resolve) => setTimeout(resolve, delay));
+    logger.info(`Reconectando en ${delay / 1000}s (intento ${reconnectAttempt})...`);
 
-  try {
-    deps.sock.ev.removeAllListeners();
-    const newSock = await createWhatsAppConnection();
-    deps.sock = newSock;
+    await new Promise((resolve) => setTimeout(resolve, delay));
 
-    newSock.ev.on('connection.update', handleConnectionUpdate(deps, createMessageHandler));
-    newSock.ev.on('messages.upsert', createMessageHandler(deps));
+    try {
+      deps.sock.ev.removeAllListeners('messages.upsert');
+      deps.sock.ev.removeAllListeners('connection.update');
+      const newSock = await createWhatsAppConnection();
+      deps.sock = newSock;
 
-    logger.info('Reconectado y listeners re-attachados');
-    isReconnecting = false;
-  } catch (error) {
-    logger.error({ err: error }, 'Error al reconectar');
-    isReconnecting = false;
-    await attemptReconnect(deps, createMessageHandler);
+      initLidResolver(newSock);
+      newSock.ev.on('connection.update', handleConnectionUpdate(deps, createMessageHandler));
+      newSock.ev.on('messages.upsert', createMessageHandler(deps));
+
+      logger.info('Reconectado y listeners re-attachados');
+      isReconnecting = false;
+      return;
+    } catch (error) {
+      logger.error({ err: error }, 'Error al reconectar');
+    }
   }
 }
