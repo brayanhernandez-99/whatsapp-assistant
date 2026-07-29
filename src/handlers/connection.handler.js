@@ -9,7 +9,9 @@ import logger from '../utils/logger.js';
 
 const RECONNECT_DELAY = 30_000;
 const MAX_RECONNECT_ATTEMPTS = 10;
+const MAX_CONSECUTIVE_500 = 3;
 let reconnectAttempt = 0;
+let consecutive500Errors = 0;
 let isReconnecting = false;
 
 export function handleConnectionUpdate(deps, createMessageHandler) {
@@ -19,6 +21,7 @@ export function handleConnectionUpdate(deps, createMessageHandler) {
     if (qr) {
       displayQR(qr);
       reconnectAttempt = 0;
+      consecutive500Errors = 0;
     }
 
     if (connection === 'connecting') {
@@ -28,6 +31,7 @@ export function handleConnectionUpdate(deps, createMessageHandler) {
     if (connection === 'open') {
       logger.info('Conectado a WhatsApp exitosamente');
       reconnectAttempt = 0;
+      consecutive500Errors = 0;
       isReconnecting = false;
     }
 
@@ -37,6 +41,21 @@ export function handleConnectionUpdate(deps, createMessageHandler) {
 
       logger.warn({ statusCode, shouldReconnect }, 'Conexion cerrada');
 
+      if (statusCode === 500) {
+        consecutive500Errors++;
+        if (consecutive500Errors >= MAX_CONSECUTIVE_500) {
+          logger.info('Demasiados errores 500 consecutivos. Limpiando sesion corrupta...');
+          cleanSession();
+          reconnectAttempt = 0;
+          consecutive500Errors = 0;
+          isReconnecting = false;
+          await attemptReconnect(deps, createMessageHandler);
+          return;
+        }
+      } else {
+        consecutive500Errors = 0;
+      }
+
       if (shouldReconnect) {
         await attemptReconnect(deps, createMessageHandler);
       } else {
@@ -44,6 +63,7 @@ export function handleConnectionUpdate(deps, createMessageHandler) {
         cleanSession();
         logger.info('Credenciales limpiadas. Reiniciando para generar nuevo QR...');
         reconnectAttempt = 0;
+        consecutive500Errors = 0;
         isReconnecting = false;
         await attemptReconnect(deps, createMessageHandler);
       }

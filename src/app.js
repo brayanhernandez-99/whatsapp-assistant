@@ -1,6 +1,6 @@
 import env from './config/env.js';
 import logger from './utils/logger.js';
-import { createWhatsAppConnection, cleanSession } from './services/whatsapp.service.js';
+import { createWhatsAppConnection } from './services/whatsapp.service.js';
 import { handleConnectionUpdate } from './handlers/connection.handler.js';
 import { createMessageHandler } from './handlers/message.handler.js';
 import stateManager from './state/state.manager.js';
@@ -12,10 +12,9 @@ import { extractPhoneFromJid } from './utils/helpers.js';
 
 function setupGracefulShutdown() {
   const shutdown = (signal) => {
-    logger.info(`Senal ${signal} recibida. Limpiando sesion...`);
+    logger.info(`Senal ${signal} recibida. Cerrando...`);
     stateManager.stopCleanup();
     cleanupTimers();
-    cleanSession();
     process.exit(0);
   };
 

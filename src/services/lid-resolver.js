@@ -2,6 +2,14 @@ import { isJidUser, isLidUser } from '@whiskeysockets/baileys';
 import logger from '../utils/logger.js';
 
 const lidToPhoneMap = new Map();
+const LID_MAP_MAX = 1000;
+
+function enforceMapLimit() {
+  if (lidToPhoneMap.size >= LID_MAP_MAX) {
+    const first = lidToPhoneMap.keys().next().value;
+    lidToPhoneMap.delete(first);
+  }
+}
 
 function extractUser(jid) {
   if (!jid) return null;
@@ -22,6 +30,7 @@ export function initLidResolver(sock) {
           if (!lidToPhoneMap.has(lidUser)) {
             logger.debug({ lid: lidUser, phone: phoneUser }, 'Mapeo LID-Telefono descubierto');
           }
+          enforceMapLimit();
           lidToPhoneMap.set(lidUser, phoneUser);
         }
       }
@@ -33,6 +42,7 @@ export function initLidResolver(sock) {
     const phoneUser = extractUser(jid);
     if (lidUser && phoneUser) {
       logger.info({ lid: lidUser, phone: phoneUser }, 'Mapeo LID-Telefono por comparticion');
+      enforceMapLimit();
       lidToPhoneMap.set(lidUser, phoneUser);
     }
   });
