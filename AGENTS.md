@@ -58,7 +58,7 @@ WhatsApp → message.handler.js → command.router.js → MENUS (constants.js)
 | `src/handlers/connection.handler.js` | Conexion/reconexion con backoff exponencial |
 | `src/router/command.router.js` | Routing de comandos, `BACK_TO_MAIN`, `findMenuByKeyword`, fallback a asesor |
 | `src/services/lid-resolver.js` | Resolucion LID→telefono via `senderPn`, `lidToPhoneMap`, `chats.phoneNumberShare` |
-| `src/services/message.service.js` | Cola de envio, `markBotSentMessage` |
+| `src/services/message.service.js` | Cola de envio, `markBotSentMessage` (interno), `isBotSentMessage` |
 | `src/services/whatsapp.service.js` | Creacion de conexion, QR, limpieza de sesion |
 | `src/services/session.service.js` | Carga de credenciales WhatsApp |
 | `src/state/paused-users.js` | Pausa/reanudacion del bot, timer de asesor |
@@ -80,8 +80,14 @@ WhatsApp → message.handler.js → command.router.js → MENUS (constants.js)
 ### Pausa/Resume
 - `pauseUser(phone, auto=true)` = agente escribio (auto-deteccion)
 - `pauseUser(phone, auto=false)` = usuario escribio "asesor" o texto no reconocido en submenu
-- La key del Map es el telefono limpio (sin `@s.whatsapp.net`)
+- La key del Map es el JID completo (con `@s.whatsapp.net`)
 - `fromMe` messages: `senderPn` es el telefono del BOT, NO del cliente — por eso `resolveJid` usa flag `fromMe` para evitar resolver con el telefono equivocado
+
+### Reconexion
+- Fixed delay de 30s entre intentos, maximo 10 intentos (5 min total)
+- Si se detectan 3 errores 500 consecutivos → limpia sesion corrupta y reconecta con QR nuevo
+- `removeAllListeners` selectivo (solo `messages.upsert` y `connection.update`) para preservar `creds.update`
+- `cleanSession()` solo se llama en logout o error 500, NO en shutdown (para no perder sesion al reiniciar)
 
 ### Router
 - `BACK_TO_MAIN = ['0', 'menu', 'menú', 'inicio', 'hola', 'buenas', 'volver']`
