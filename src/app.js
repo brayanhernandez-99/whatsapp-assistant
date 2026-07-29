@@ -33,26 +33,15 @@ async function start() {
 
   const deps = { stateManager, messageService, sock };
 
-  stateManager.onSessionExpire(async (phone) => {
-    try {
-      resumeUser(phone);
-      await messageService.sendText(deps.sock, phone, MESSAGES.sessionTimeout);
-      logger.info({ phone: extractPhoneFromJid(phone) }, 'Sesion expirada y bot reanudado');
-    } catch (error) {
-      logger.error(
-        { err: error, phone: extractPhoneFromJid(phone) },
-        'Error al enviar mensaje de expiracion',
-      );
-    }
+  stateManager.onSessionExpire((phone) => {
+    resumeUser(phone);
+    messageService.sendText(deps.sock, phone, MESSAGES.sessionTimeout);
+    logger.info({ phone: extractPhoneFromJid(phone) }, 'Sesion expirada y bot reanudado');
   });
 
-  setOnAdvisorTimeout(async (phone) => {
-    try {
-      await messageService.sendText(deps.sock, phone, MESSAGES.sessionTimeout);
-      logger.info({ phone: extractPhoneFromJid(phone) }, 'Timeout de asesor expirado - mensaje enviado');
-    } catch (error) {
-      logger.error({ err: error, phone: extractPhoneFromJid(phone) }, 'Error al enviar mensaje de timeout de asesor');
-    }
+  setOnAdvisorTimeout((phone) => {
+    messageService.sendText(deps.sock, phone, MESSAGES.sessionTimeout);
+    logger.info({ phone: extractPhoneFromJid(phone) }, 'Timeout de asesor expirado - mensaje enviado');
   });
 
   stateManager.startCleanup();

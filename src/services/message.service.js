@@ -23,17 +23,14 @@ export function isBotSentMessage(messageId) {
   return false;
 }
 
-export async function sendText(sock, jid, text) {
-  await enqueue(sock, jid, { text });
+export function sendText(sock, jid, text) {
+  sendQueue.push({ sock, jid, content: { text } });
+  processQueue();
 }
 
-export async function sendLocation(sock, jid, latitude, longitude) {
-  await enqueue(sock, jid, { location: { latitude, longitude } });
-}
-
-async function enqueue(sock, jid, content) {
-  sendQueue.push({ sock, jid, content });
-  await processQueue();
+export function sendLocation(sock, jid, latitude, longitude) {
+  sendQueue.push({ sock, jid, content: { location: { latitude, longitude } } });
+  processQueue();
 }
 
 async function processQueue() {

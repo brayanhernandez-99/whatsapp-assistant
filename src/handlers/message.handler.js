@@ -76,7 +76,7 @@ export function createMessageHandler(deps) {
           'Mensaje recibido',
         );
 
-        await routeMessage(parsed, deps);
+        routeMessage(parsed, deps);
       } catch (error) {
         logger.error(
           {

@@ -14,12 +14,12 @@ function goToMain(from, stateManager) {
   });
 }
 
-async function sendMenuResponse(sock, from, menu, messageService) {
+function sendMenuResponse(sock, from, menu, messageService) {
   if (menu.location) {
-    await messageService.sendLocation(sock, from, menu.location.latitude, menu.location.longitude);
+    messageService.sendLocation(sock, from, menu.location.latitude, menu.location.longitude);
   }
 
-  await messageService.sendText(sock, from, menu.text);
+  messageService.sendText(sock, from, menu.text);
 }
 
 function findMenuByKeyword(text, currentState) {
@@ -38,7 +38,7 @@ function findMenuByKeyword(text, currentState) {
   return null;
 }
 
-export async function routeMessage(parsedMessage, deps) {
+export function routeMessage(parsedMessage, deps) {
   const { stateManager, messageService, sock } = deps;
   const { from, body } = parsedMessage;
 
@@ -48,7 +48,7 @@ export async function routeMessage(parsedMessage, deps) {
 
   if (BACK_TO_MAIN.includes(text)) {
     goToMain(from, stateManager);
-    await messageService.sendText(sock, from, MESSAGES.backToMain);
+    messageService.sendText(sock, from, MESSAGES.backToMain);
     return;
   }
 
@@ -63,7 +63,7 @@ export async function routeMessage(parsedMessage, deps) {
       selectedOption: 'shown',
       context: {},
     });
-    await messageService.sendText(sock, from, MESSAGES.backToMain);
+    messageService.sendText(sock, from, MESSAGES.backToMain);
     return;
   }
 
@@ -83,7 +83,7 @@ export async function routeMessage(parsedMessage, deps) {
           { from: extractPhoneFromJid(from), option: text, menu: option },
           'Menu seleccionado',
         );
-        await sendMenuResponse(sock, from, MENUS[option], messageService);
+        sendMenuResponse(sock, from, MENUS[option], messageService);
         return;
       }
     }
@@ -105,7 +105,7 @@ export async function routeMessage(parsedMessage, deps) {
           { from: extractPhoneFromJid(from), option: text, menu: subOption },
           'Submenu seleccionado',
         );
-        await sendMenuResponse(sock, from, subMenu, messageService);
+        sendMenuResponse(sock, from, subMenu, messageService);
         return;
       }
     }
@@ -125,12 +125,12 @@ export async function routeMessage(parsedMessage, deps) {
       { from: extractPhoneFromJid(from), keyword: text, menu: matchedMenu },
       'Menu seleccionado por keyword',
     );
-    await sendMenuResponse(sock, from, MENUS[matchedMenu], messageService);
+    sendMenuResponse(sock, from, MENUS[matchedMenu], messageService);
     return;
   }
 
   if (currentState.currentMenu !== 'main') {
-    await messageService.sendText(sock, from, MESSAGES.advisorRedirect);
+    messageService.sendText(sock, from, MESSAGES.advisorRedirect);
     pauseUser(from, false);
     goToMain(from, stateManager);
     logger.info(
@@ -138,6 +138,6 @@ export async function routeMessage(parsedMessage, deps) {
       'Redirecting to advisor',
     );
   } else {
-    await messageService.sendText(sock, from, MESSAGES.defaultReply);
+    messageService.sendText(sock, from, MESSAGES.defaultReply);
   }
 }
